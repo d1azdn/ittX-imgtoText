@@ -77,7 +77,7 @@ class streamlitContainer :
 header = streamlitContainer()
 header.container(2)
 with header.left:
-    header.iconMid("https://cdn-icons-png.flaticon.com/512/25/25231.png")
+    header.iconMid("./assets/ittx-Logo.jpg")
 
 with header.right: 
     st.title("ittX - Image to Text")
@@ -124,7 +124,7 @@ with bottom.left :
     st.write("And also there are features to enhance your image too!")
 
 with bottom.right:
-    bottom.iconMid("https://icons.iconarchive.com/icons/dtafalonso/android-l/256/Youtube-icon.png")
+    bottom.iconMid("https://blog.bangaloreeducation.com/wp-content/uploads/image-to-text.jpg")
 
 
 st.markdown("#")
