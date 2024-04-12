@@ -42,5 +42,5 @@ Distributed under the MIT License, see `LICENSE` for more information
 Clone this project
 
 ```sh
-git clone -b [tag-name] https://github.com/d1azdn/ittx-imagetoText
+git clone -b [tag-name] https://github.com/d1azdn/ittx-imgtoText
 ```
