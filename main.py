@@ -1,59 +1,104 @@
 import cv2
-import numpy as np
-from matplotlib import pyplot as plt
 import easyocr
-plt.style.use('seaborn')
+import webbrowser
+import os
+import imgSharpen
+import streamlit as st
+from streamlit_lottie import st_lottie
+from streamlit_option_menu import option_menu
 
-image = cv2.imread('ada.jpg')
-blah = cv2.medianBlur(image,5)
+def imageOCR(self,image,method):
+    match method:
+        case "morphEx" :
+            img = imgSharpen.sharpening()
+            img = img.morphEx(image)
+        case "unsharpMask" :
+            img = imgSharpen.sharpening()
+            img = img.unsharpMask(image)
+        case "gaussThresh" : 
+            img = imgSharpen.sharpening()
+            img = img.gaussThresh(image)
+        case None : 
+            img = image
+    
+    reader = easyocr.Reader(['en'], gpu=True)
+    readText = reader.readtext(img)
+    text = ""
+    for t in text:
+        text = text + t[1] + " "
+    
+    st.session_state.text = text
+    st.session_state.enhanced = "imageEnhanced.png"
 
-blur = cv2.GaussianBlur(image,(5,5),0)
 
-blor = cv2.bilateralFilter(image,9,100,100)
+fileCheck = [f for f in os.listdir("./examples") if f.endswith(".png") 
+             or f.endswith(".jpg") or f.endswith(".jpeg")]
 
-dst = cv2.fastNlMeansDenoisingColored(image, None, 8, 8, 7, 21)
+grayBg = "https://www.solidbackgrounds.com/images/1280x720/1280x720-light-gray-solid-color-background.jpg"
 
-kernel = np.array([[0,-1,0], [-1,5,-1], [0,-1,0]])
-imug = cv2.filter2D(src=image, ddepth=-1, kernel=kernel)
+if "menu" not in st.session_state:
+    st.session_state.text = "Your text will show here."
+    st.session_state.enhanced = grayBg
 
-def unsharp_mask(image, kernel_size=(5, 5), sigma=1.0, amount=1.0, threshold=0):
-    """Return a sharpened version of the image, using an unsharp mask."""
-    blurred = cv.GaussianBlur(image, kernel_size, sigma)
-    sharpened = float(amount + 1) * image - float(amount) * blurred
-    sharpened = np.maximum(sharpened, np.zeros(sharpened.shape))
-    sharpened = np.minimum(sharpened, 255 * np.ones(sharpened.shape))
-    sharpened = sharpened.round().astype(np.uint8)
-    if threshold > 0:
-        low_contrast_mask = np.absolute(image - blurred) < threshold
-        np.copyto(sharpened, image, where=low_contrast_mask)
-    return sharpened
 
-def example():
-    sharpened_image = unsharp_mask(dst)
-    return sharpened_image
+##########
+st.set_page_config(page_title="imagetoText - ittX", layout='wide')
 
-cv2.imwrite('my-sharpened-a.jpg', dst)
+class streamlitContainer :
+    def container(self,input):
+        with st.container():
+            match input:
+                case 1:
+                    pass
 
-gray1 = cv2.cvtColor(dst, cv2.COLOR_BGR2GRAY)
+                case 2:
+                    self.left, self.right = st.columns(2)
 
-thresh1 = cv2.adaptiveThreshold(gray1, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 21, 15)
+                case 3:
+                    self.left, self.middle, self.right = st.columns(3)
 
-reader = easyocr.Reader(['en'], gpu=True)
-text = reader.readtext(image)
-for t in text:
-  print(t[1])
+                case _: return
 
-row, col = 3, 1
-fig, axs = plt.subplots(row, col, figsize=(25, 20))
-fig.tight_layout()
+    def iconMid(self,input):
+        a,b,c = st.columns(3)
+        with b :
+            st.image(input, width=250)
 
-axs[0].imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-axs[0].set_title('Elephant')
+    def setContent(self,input):
+        st.image(input['image'])
+        st.subheader(input['title'])
+        st.text(input['view'])
+        st.write(input['author'])
 
-axs[1].imshow(cv2.cvtColor(thresh1, cv2.COLOR_BGR2RGB))
-axs[1].set_title('Fast Means Denoising')
+header = streamlitContainer()
+header.container(2)
+with header.left:
+    header.iconMid("https://cdn-icons-png.flaticon.com/512/25/25231.png")
 
-axs[2].imshow(cv2.cvtColor(thresh1, cv2.COLOR_BGR2RGB))
-axs[2].set_title('Fast Means Denoising')
-plt.show()
+with header.right: 
+    st.title("ittX - Image to Text")
+    st.write("Convert your **image** into **text**, with just a few clicks!")
+    if st.button("Start now!"):
+        pass
 
+st.markdown("#")
+st.write("---")#####
+st.markdown("#")
+
+main = streamlitContainer()
+main.container(2)
+with main.left : 
+    file = st.selectbox('Select your image. (png/jpg/jpeg)', fileCheck)
+    st.image("./examples/"+file)
+    if st.checkbox("Include sharpening image"):
+        choice = st.radio("--- Choose method ---",["morphEx", "unsharpMask", "gaussThresh"],
+                          captions=['','','Just make it b&w'])
+    if st.button("Generate"):
+        imageOCR("./examples/"+file)
+
+with main.right:
+    st.write("Your text will show here.")
+    st.code(st.session_state.text)
+    st.write("---")
+    st.write("Sharpened image : ")
+    st.image(st.session_state.enhanced)

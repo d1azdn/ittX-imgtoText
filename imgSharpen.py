@@ -12,6 +12,7 @@ class sharpening:
         dilated = cv2.dilate(blur,np.ones((3,3)))
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2, 2))
         closing = cv2.morphologyEx(dilated, cv2.MORPH_CLOSE, kernel)
+        cv2.imwrite("imageEnhanced.png", closing)
         return closing
     
     def unsharpMask(image, kernel_size=(5, 5), sigma=1.0, amount=1.0, threshold=0):
@@ -23,11 +24,13 @@ class sharpening:
         if threshold > 0:
             low_contrast_mask = np.absolute(image - blurred) < threshold
             np.copyto(sharpened, image, where=low_contrast_mask)
+        cv2.imwrite("imageEnhanced.png", sharpened)
         return sharpened
     
     def gaussThresh(image):
         img = cv2.imread(image, cv2.IMREAD_GRAYSCALE)
         blur = cv2.GaussianBlur(img, 5)
         thresh = cv2.adaptiveThreshold(blur,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,11,2)
+        cv2.imwrite("imageEnhanced.png", thresh)
         return thresh
 
